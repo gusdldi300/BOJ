@@ -68,5 +68,4 @@ public class G11054 {
 
         return longestCount - 1;
     }
-
 }
