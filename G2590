@@ -1,0 +1,90 @@
+package greedy;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+
+public class G2590 {
+    private static final int MAX_PAPER_LENGTH = 6;
+    private static final int BOARD_SIZE = 36;
+
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+
+        int[] paperCounts = new int[MAX_PAPER_LENGTH + 1];
+        for (int length = 1; length <= MAX_PAPER_LENGTH; ++length) {
+            paperCounts[length] = Integer.parseInt(br.readLine());
+        }
+
+        int boardCount = paperCounts[MAX_PAPER_LENGTH];
+
+        for (int length = MAX_PAPER_LENGTH - 1; length >= 1; --length) {
+            while (paperCounts[length] > 0) {
+                boolean[][] board = new boolean[MAX_PAPER_LENGTH][MAX_PAPER_LENGTH];
+                ++boardCount;
+
+                usePapers(length, board, paperCounts);
+
+                int maxLeftLength = Math.min(MAX_PAPER_LENGTH - length, length);
+                for (int leftLength = maxLeftLength; leftLength >= 1; --leftLength) {
+                    usePapers(leftLength, board, paperCounts);
+                }
+            }
+        }
+
+        System.out.println(boardCount);
+    }
+
+    private static void setPaperOnBoard(int row, int col, int paperLength, boolean[][] board) {
+        int rowLength = row + paperLength;
+        int colLength = col + paperLength;
+
+        for (int i = row; i < rowLength; ++i) {
+            for (int j = col; j < colLength; ++j) {
+                board[i][j] = true;
+            }
+        }
+    }
+
+    private static void usePapers(int paperLength, boolean[][] board, int[] paperCounts) {
+        if (paperCounts[paperLength] == 0) {
+            return;
+        }
+
+        for (int i = 0; i < board.length; ++i) {
+            for (int j = 0; j < board[0].length; ++j) {
+                if (checkAvailable(board, i, j, paperLength) == true) {
+                    setPaperOnBoard(i, j, paperLength, board);
+
+                    paperCounts[paperLength]--;
+                    if (paperCounts[paperLength] == 0) {
+                        return;
+                    }
+                }
+            }
+        }
+    }
+
+    private static boolean checkAvailable(boolean[][] board, int row, int col, int length) {
+        int rowLength = row + length;
+        int colLength = col + length;
+
+        if ((rowLength > board.length) || (colLength > board[0].length)) {
+            return false;
+        }
+
+        if (board[row][col] == true) {
+            return false;
+        }
+
+        for (int i = row; i < rowLength; ++i) {
+            for (int j = col; j < colLength; ++j) {
+                if (board[i][j] == true) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+}
