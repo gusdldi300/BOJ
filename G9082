@@ -1,0 +1,107 @@
+package greedy;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+
+public class G9082 {
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+
+        int testSize = Integer.parseInt(br.readLine());
+        for (int testIndex = 0; testIndex < testSize; ++testIndex) {
+            int blockSize = Integer.parseInt(br.readLine());
+
+            String nearByMineCounts = br.readLine();
+            String blocks = br.readLine();
+
+            int[] mines = copyBlocks(blocks, blockSize);
+
+            int checkMineCount = nearByMineCounts.charAt(0) - '0';
+            int firstMineCount = 0;
+
+            mines[0] = 1;
+            if (checkMineCount == 1) {
+                if (mines[1] == 0) {
+                    mines[1] = -1;
+                    firstMineCount = 1;
+
+                    firstMineCount = getTotalMineCount(nearByMineCounts, mines, firstMineCount);
+                }
+            } else if (checkMineCount == 2) {
+                mines[1] = 1;
+                firstMineCount = 2;
+
+                firstMineCount = getTotalMineCount(nearByMineCounts, mines, firstMineCount);
+            }
+
+            int secondMineCount = 0;
+            mines = copyBlocks(blocks, blockSize);
+
+            mines[0] = -1;
+            if (checkMineCount == 0) {
+                if (mines[1] == 0) {
+                    mines[1] = -1;
+                    secondMineCount = 0;
+
+                    secondMineCount = getTotalMineCount(nearByMineCounts, mines, secondMineCount);
+                }
+            } else if (checkMineCount == 1) {
+                mines[1] = 1;
+                secondMineCount = 1;
+                secondMineCount = getTotalMineCount(nearByMineCounts, mines, secondMineCount);
+            }
+
+            System.out.println(Math.max(firstMineCount, secondMineCount));
+        }
+    }
+
+    private static int[] copyBlocks(String blocks, int blockSize) {
+        int[] copied = new int[blockSize];
+        for (int blockIndex = 0; blockIndex < blockSize; ++blockIndex) {
+            if (blocks.charAt(blockIndex) == '*') {
+                copied[blockIndex] = 1;
+            }
+        }
+
+        return copied;
+    }
+
+    private static int getTotalMineCount(String nearByMineCounts, int[] mines, int mineCount) {
+        for (int blockIndex = 1; blockIndex < mines.length - 1; ++blockIndex) {
+            int checkMineCount = nearByMineCounts.charAt(blockIndex) - '0';
+            int currentCount = getLastMineCount(mines, blockIndex - 1);
+
+            if (currentCount > checkMineCount) {
+                return 0;
+            } else if (currentCount == checkMineCount) {
+                if (mines[blockIndex + 1] == 1) {
+                    return 0;
+                }
+
+                mines[blockIndex + 1] = -1;
+            } else {
+                if ((currentCount + 1) != checkMineCount) {
+                    return 0;
+                }
+
+                mines[blockIndex + 1] = 1;
+                ++mineCount;
+            }
+        }
+
+        return mineCount;
+    }
+
+    private static int getLastMineCount(int[] mines, int start) {
+        int end = start + 2;
+        int lastMineCount = 0;
+        for (int index = start; index < end; ++index) {
+            if (mines[index] == 1) {
+                lastMineCount++;
+            }
+        }
+
+        return lastMineCount;
+    }
+}
