@@ -22,30 +22,29 @@ public class S15657 {
         }
 
         Arrays.sort(sSeq);
-        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));
+        StringBuilder sb = new StringBuilder();
         int[] subSeq = new int[sSubSeqSize];
 
-        getAnswerRecursive(subSeq, 0, 0, bw);
-        bw.flush();
+        getAnswerRecursive(subSeq, 0, 0, sb);
+        System.out.print(sb.toString());
 
         br.close();
-        bw.close();
     }
 
-    private static void getAnswerRecursive(final int[] subSeq, int subSeqIndex, int seqIndex, final BufferedWriter bw) throws IOException {
+    private static void getAnswerRecursive(final int[] subSeq, int subSeqIndex, int seqIndex, final StringBuilder sb) throws IOException {
         if (subSeqIndex == sSubSeqSize) {
             for (int index = 0; index < sSubSeqSize; ++index) {
-                bw.append(String.valueOf(subSeq[index]));
-                bw.append(' ');
+                sb.append(subSeq[index]);
+                sb.append(' ');
             }
 
-            bw.append(System.lineSeparator());
+            sb.append(System.lineSeparator());
             return;
         }
 
         for (int index = seqIndex; index < sSeqSize; ++index) {
             subSeq[subSeqIndex] = sSeq[index];
-            getAnswerRecursive(subSeq, subSeqIndex + 1, index, bw);
+            getAnswerRecursive(subSeq, subSeqIndex + 1, index, sb);
         }
     }
 }
