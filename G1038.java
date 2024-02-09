@@ -7,7 +7,7 @@ import java.util.HashMap;
 
 public class G1038 {
     private static int sTurn;
-    private static HashMap<Long, Long> sCache = new HashMap<>();
+    private static HashMap<Long, Integer> sCache = new HashMap<>();
     private static final long MAX_DESCENDING_NUMBER = 9876543210L;
 
     public static void main(String[] args) throws IOException {
@@ -22,65 +22,88 @@ public class G1038 {
         }
 
         for (long first = 0; first < 10; ++first) {
-            sCache.put(first, 1L);
+            sCache.put(first, 1);
         }
 
-        long currentTurn = 9;
-        long currentDividend = 1; // 10^1
+        int turn = 9;
+        int degree = 1; // 10 ^ 1
 
-        // 970
-        while (((long) Math.pow(10, currentDividend)) <= MAX_DESCENDING_NUMBER) {
-            long temp = (long) Math.pow(10, currentDividend);
+        long multiple = (long) Math.pow(10, degree);
+        while (multiple <= MAX_DESCENDING_NUMBER) {
+            long currentNum = degree * multiple;
 
-            for (long first = currentDividend; first < 10; ++first) {
-                long cacheTurn = 0;
-                for (long last = currentDividend - 1; last < first; ++last) {
-                    long addTurn = sCache.get(last * (temp / 10));
+            sCache.put(currentNum, 1);
+            turn++;
 
-                    if (sTurn <= (currentTurn + addTurn)) {
-                        long currentNum = (first * temp) + (last * (temp / 10));
-                        getDescendNumberRecursive(currentNum, last, currentDividend - 2, currentTurn);
+            if (turn == sTurn) {
+                printAnswer(currentNum, degree - 1, degree - 1);
 
-                        return;
-                    }
-
-                    currentTurn += addTurn;
-                    cacheTurn += addTurn;
-                }
-
-                sCache.put(first * temp, cacheTurn);
+                return;
             }
 
-            currentDividend++;
+            for (int first = degree + 1; first < 10; ++first) {
+                int last = first - 1;
+                int cacheTurn = sCache.get(last * multiple) + sCache.get(last * (multiple / 10));
+
+                currentNum = first * multiple;
+                if (sTurn <= (turn + cacheTurn)) {
+                    getDescendNumberRecursive(currentNum, first, degree - 1, turn);
+
+                    return;
+                }
+
+                sCache.put(currentNum, cacheTurn);
+                turn += cacheTurn;
+            }
+
+            degree++;
+            multiple = (long) Math.pow(10, degree);
         }
 
         System.out.print(-1);
     }
 
-    private static void getDescendNumberRecursive(long currentNum, long last, long dividend, long currentTurn) {
-        if (currentTurn == sTurn) {
-            while (dividend >= 0) {
-                currentNum += (last * (long) Math.pow(10, dividend));
+    private static void printAnswer(long currentNum, int last, int degree) {
+        long multiple = (long) Math.pow(10, degree);
 
-                --last;
-                --dividend;
-            }
-            System.out.print(currentNum);
+        while (multiple > 0) {
+            currentNum += (last * multiple);
 
-            System.exit(0);
+            --last;
+            multiple /= 10;
         }
 
-        long temp = (long) Math.pow(10, dividend);
-        for (long next = dividend; next < last; ++next) {
-            long addTurn = sCache.get(next * temp);
+        System.out.print(currentNum);
+    }
 
-            if ((currentTurn + addTurn) == sTurn) {
-                getDescendNumberRecursive(currentNum + (next * temp), next - 1, dividend - 1, currentTurn + addTurn);
-            } else if ((currentTurn + addTurn) > sTurn) {
-                getDescendNumberRecursive(currentNum + (next * temp), next, dividend - 1, currentTurn);
+    private static void getDescendNumberRecursive(long currentNum, int last, int degree, int turn) {
+        if (turn == sTurn) {
+            printAnswer(currentNum, last, degree);
+
+            return;
+        }
+
+        long multiple = (long) Math.pow(10, degree);
+
+        int next = degree;
+        int nextTurn = turn + sCache.get(next * multiple);
+
+        while (next < last) {
+            if (nextTurn >= sTurn) {
+                break;
             }
 
-            currentTurn += addTurn;
+            ++next;
+
+            turn = nextTurn;
+            nextTurn = turn + sCache.get(next * multiple);
+        }
+
+        currentNum += (next * multiple);
+        if (nextTurn == sTurn) {
+            getDescendNumberRecursive(currentNum, next - 1, degree - 1, nextTurn);
+        } else {
+            getDescendNumberRecursive(currentNum, next, degree - 1, turn);
         }
     }
 
