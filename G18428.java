@@ -45,7 +45,7 @@ public class G18428 {
             }
         }
 
-        if (isAvoidableRecursive(0, 0, 0) == false) {
+        if (isAvoidableRecursive(0, 0) == false) {
             System.out.print("NO");
         } else {
             System.out.print("YES");
@@ -94,25 +94,26 @@ public class G18428 {
         return true;
     }
 
-    private static boolean isAvoidableRecursive(int nextRow, int nextCol, int obsCount) {
+    private static boolean isAvoidableRecursive(int nextIndex, int obsCount) {
         if (obsCount == MAX_OBSTACLE_COUNT) {
             return isStudentHid();
         }
 
-        for (int row = 0; row < sMapSize; ++row) {
-            for (int col = 0; col < sMapSize; ++col) {
-                String state = sMap[row][col];
+        final int MAP_SIZE_2D = sMapSize * sMapSize;
+        while (nextIndex < MAP_SIZE_2D) {
+            int row = nextIndex / sMapSize;
+            int col = nextIndex % sMapSize;
+            String state = sMap[row][col];
 
-                if (!state.equals("X")) {
-                    continue;
-                }
-
+            if (state.equals("X")) {
                 sMap[row][col] = "O";
-                if (isAvoidableRecursive(row, col + 1, obsCount + 1) == true) {
+                if (isAvoidableRecursive(nextIndex + 1, obsCount + 1)) {
                     return true;
                 }
                 sMap[row][col] = "X";
             }
+
+            ++nextIndex;
         }
 
         return false;
