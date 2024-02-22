@@ -33,10 +33,14 @@ public class G9944 {
             sColSize = Integer.parseInt(st.nextToken());
 
             sMap = new char[sRowSize][sColSize];
+            int mapLeftCount = 0;
             for (int row = 0; row < sRowSize; ++row) {
                 String input = br.readLine();
                 for (int col = 0; col < sColSize; ++col) {
                     sMap[row][col] = input.charAt(col);
+                    if (sMap[row][col] == '.') {
+                        mapLeftCount++;
+                    }
                 }
             }
 
@@ -45,7 +49,7 @@ public class G9944 {
                 for (int col = 0; col < sColSize; ++col) {
                     if (sMap[row][col] == '.') {
                         sVisited[row][col] = true;
-                        getLeastMoveCountRecursive(0, row, col);
+                        getLeastMoveCountRecursive(mapLeftCount - 1, 0, row, col);
                         sVisited[row][col] = false;
                     }
                 }
@@ -64,20 +68,8 @@ public class G9944 {
         System.out.print(sb.toString());
     }
 
-    private static boolean hasVisitedAll() {
-        for (int row = 0; row < sRowSize; ++row) {
-            for (int col = 0; col < sColSize; ++col) {
-                if (sMap[row][col] == '.' && !sVisited[row][col]) {
-                    return false;
-                }
-            }
-        }
-
-        return true;
-    }
-
-    private static void getLeastMoveCountRecursive(int moveCount, int row, int col) {
-        if (hasVisitedAll()) {
+    private static void getLeastMoveCountRecursive(int leftMapCount, int moveCount, int row, int col) {
+        if (leftMapCount == 0) {
             sAnswer = Math.min(sAnswer, moveCount);
 
             return;
@@ -114,7 +106,7 @@ public class G9944 {
                 ++count;
             }
 
-            getLeastMoveCountRecursive(moveCount + 1, moveRow, moveCol);
+            getLeastMoveCountRecursive(leftMapCount - count, moveCount + 1, moveRow, moveCol);
 
             int lastRow = row;
             int lastCol = col;
@@ -126,6 +118,19 @@ public class G9944 {
                 --count;
             }
         }
+    }
+
+    /*
+    private static boolean hasVisitedAll() {
+        for (int row = 0; row < sRowSize; ++row) {
+            for (int col = 0; col < sColSize; ++col) {
+                if (sMap[row][col] == '.' && !sVisited[row][col]) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
 
     private static boolean[][] copyVisited(final boolean[][] visited) {
@@ -154,5 +159,5 @@ public class G9944 {
             moveCol += sColDirs[dir];
         }
     }
-
+    */
 }
