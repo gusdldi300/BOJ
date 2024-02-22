@@ -15,6 +15,8 @@ public class G9944 {
     private static char[][] sMap;
     private static int sAnswer = Integer.MAX_VALUE;
 
+    private static boolean[][] sVisited;
+
     public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         StringBuilder sb = new StringBuilder();
@@ -38,13 +40,13 @@ public class G9944 {
                 }
             }
 
-            boolean[][] visited = new boolean[sRowSize][sColSize];
+            sVisited = new boolean[sRowSize][sColSize];
             for (int row = 0; row < sRowSize; ++row) {
                 for (int col = 0; col < sColSize; ++col) {
                     if (sMap[row][col] == '.') {
-                        visited[row][col] = true;
-                        getLeastMoveCountRecursive(0, row, col, visited);
-                        visited[row][col] = false;
+                        sVisited[row][col] = true;
+                        getLeastMoveCountRecursive(0, row, col);
+                        sVisited[row][col] = false;
                     }
                 }
             }
@@ -62,10 +64,10 @@ public class G9944 {
         System.out.print(sb.toString());
     }
 
-    private static boolean hasVisitedAll(final boolean[][] visited) {
+    private static boolean hasVisitedAll() {
         for (int row = 0; row < sRowSize; ++row) {
             for (int col = 0; col < sColSize; ++col) {
-                if (sMap[row][col] == '.' && !visited[row][col]) {
+                if (sMap[row][col] == '.' && !sVisited[row][col]) {
                     return false;
                 }
             }
@@ -74,8 +76,8 @@ public class G9944 {
         return true;
     }
 
-    private static void getLeastMoveCountRecursive(int moveCount, int row, int col, boolean[][] visited) {
-        if (hasVisitedAll(visited)) {
+    private static void getLeastMoveCountRecursive(int moveCount, int row, int col) {
+        if (hasVisitedAll()) {
             sAnswer = Math.min(sAnswer, moveCount);
 
             return;
@@ -89,13 +91,13 @@ public class G9944 {
                 continue;
             }
 
-            if (visited[moveRow][moveCol] || sMap[moveRow][moveCol] == '*') {
+            if (sVisited[moveRow][moveCol] || sMap[moveRow][moveCol] == '*') {
                 continue;
             }
 
-            boolean[][] copied = copyVisited(visited);
+            int count = 1;
             while (true) {
-                copied[moveRow][moveCol] = true;
+                sVisited[moveRow][moveCol] = true;
                 int nextRow = moveRow + sRowDirs[dir];
                 int nextCol = moveCol + sColDirs[dir];
 
@@ -103,15 +105,26 @@ public class G9944 {
                     break;
                 }
 
-                if (visited[nextRow][nextCol] || sMap[nextRow][nextCol] == '*') {
+                if (sVisited[nextRow][nextCol] || sMap[nextRow][nextCol] == '*') {
                     break;
                 }
 
                 moveRow = nextRow;
                 moveCol = nextCol;
+                ++count;
             }
 
-            getLeastMoveCountRecursive(moveCount + 1, moveRow, moveCol, copied);
+            getLeastMoveCountRecursive(moveCount + 1, moveRow, moveCol);
+
+            int lastRow = row;
+            int lastCol = col;
+            while (count > 0) {
+                lastRow += sRowDirs[dir];
+                lastCol += sColDirs[dir];
+
+                sVisited[lastRow][lastCol] = false;
+                --count;
+            }
         }
     }
 
