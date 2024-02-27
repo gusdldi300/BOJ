@@ -5,12 +5,16 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 
 public class G17370 {
-    private static int sRotateSize;
     private static final int MAP_SIZE = 100;
+    private static int sRotateSize;
     private static boolean[][] sVisited = new boolean[MAP_SIZE][MAP_SIZE];
-    private static int sCheckCount;
-
     private static int sAnswer;
+    private static Direction[] sNorthNextDirs = new Direction[] {Direction.NORTH_WEST, Direction.NORTH_EAST};
+    private static Direction[] sNorthEastNextDirs = new Direction[] {Direction.NORTH, Direction.SOUTH_EAST};
+    private static Direction[] sNorthWestNextDirs = new Direction[] {Direction.NORTH, Direction.SOUTH_WEST};
+    private static Direction[] sSouthNextDirs = new Direction[] {Direction.SOUTH_WEST, Direction.SOUTH_EAST};
+    private static Direction[] sSouthEastNextDirs = new Direction[] {Direction.SOUTH, Direction.NORTH_EAST};
+    private static Direction[] sSouthWestNextDirs = new Direction[] {Direction.SOUTH, Direction.NORTH_WEST};
 
     private static enum Direction {
         NORTH,
@@ -36,7 +40,6 @@ public class G17370 {
             return;
         }
 
-        sCheckCount = sRotateSize - 6;
         int startRow = MAP_SIZE / 2;
         int startCol = startRow;
         sVisited = new boolean[MAP_SIZE][MAP_SIZE];
@@ -46,16 +49,6 @@ public class G17370 {
 
         System.out.print(sAnswer);
     }
-
-    private static int sCheckRow;
-    private static int sCheckCol;
-
-    private static Direction[] sNorthNextDirs = new Direction[] {Direction.NORTH_WEST, Direction.NORTH_EAST};
-    private static Direction[] sNorthEastNextDirs = new Direction[] {Direction.NORTH, Direction.SOUTH_EAST};
-    private static Direction[] sNorthWestNextDirs = new Direction[] {Direction.NORTH, Direction.SOUTH_WEST};
-    private static Direction[] sSouthNextDirs = new Direction[] {Direction.SOUTH_WEST, Direction.SOUTH_EAST};
-    private static Direction[] sSouthEastNextDirs = new Direction[] {Direction.SOUTH, Direction.NORTH_EAST};
-    private static Direction[] sSouthWestNextDirs = new Direction[] {Direction.SOUTH, Direction.NORTH_WEST};
 
     private static void getAnswerRecursive(int rotateCount, int lastRow, int lastCol, final Direction dir) {
         Direction[] nextDirs = sNorthNextDirs;
@@ -94,7 +87,7 @@ public class G17370 {
         //System.out.format("%s (%d)\n", dir, rotateCount);
 
         if (rotateCount == sRotateSize) {
-            if (row == sCheckRow && col == sCheckCol) {
+            if (sVisited[row][col]) {
                 sAnswer++;
                 //System.out.println(sAnswer);
             }
@@ -104,11 +97,6 @@ public class G17370 {
 
         if (sVisited[row][col]) {
             return;
-        }
-
-        if (rotateCount == sCheckCount) {
-            sCheckRow = row;
-            sCheckCol = col;
         }
 
         sVisited[row][col] = true;
@@ -124,4 +112,3 @@ public class G17370 {
         }
     }
 }
-
