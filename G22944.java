@@ -3,11 +3,10 @@ package backtracking;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.LinkedList;
-import java.util.Queue;
-import java.util.StringTokenizer;
+import java.util.*;
 
 public class G22944 {
+    /*
     private static class State {
         private int row;
         private int col;
@@ -146,5 +145,90 @@ public class G22944 {
 
         return copied;
     }
+    */
 
+    private static int sMapSize;
+    private static int sHealth;
+    private static int sUmbrellaDurability;
+    private static Position sStart;
+    private static Position sSafetyZone;
+
+    private static int sMinMoveCount = Integer.MAX_VALUE;
+
+    private static class Position {
+        private int row;
+        private int col;
+
+        public Position(int row, int col) {
+            this.row = row;
+            this.col = col;
+        }
+    }
+
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        StringTokenizer st = new StringTokenizer(br.readLine());
+
+        sMapSize = Integer.parseInt(st.nextToken());
+        sHealth = Integer.parseInt(st.nextToken());
+        sUmbrellaDurability = Integer.parseInt(st.nextToken());
+
+        HashSet<Position> visited = new HashSet<>();
+        ArrayList<Position> umbrellas = new ArrayList<>();
+
+        for (int row = 0; row < sMapSize; ++row) {
+            String input = br.readLine();
+            for (int col = 0; col < sMapSize; ++col) {
+                char state = input.charAt(col);
+
+                if (state == 'S') {
+                    sStart = new Position(row, col);
+                } else if (state == 'E') {
+                    sSafetyZone = new Position(row, col);
+                } else if (state == 'U') {
+                    umbrellas.add(new Position(row, col));
+                }
+            }
+        }
+
+        getMinMoveCountToSafetyZoneRecursive(0, sStart, sHealth, 0, umbrellas, visited);
+        if (sMinMoveCount == Integer.MAX_VALUE) {
+            sMinMoveCount = -1;
+        }
+
+        System.out.print(sMinMoveCount);
+    }
+
+    private static int getDistanceBetween(final Position first, final Position second) {
+        return Math.abs(first.row - second.row) + Math.abs(first.col - second.col);
+    }
+
+    private static void getMinMoveCountToSafetyZoneRecursive(int count, final Position curPosition, int health, int durability, final ArrayList<Position> umbrellas, final HashSet<Position> visited) {
+        int distance = getDistanceBetween(curPosition, sSafetyZone);
+        if (distance <= (health + durability)) {
+            sMinMoveCount = Math.min(sMinMoveCount, count + distance);
+
+            return;
+        }
+
+        for (Position umbrella : umbrellas) {
+            if (visited.contains(umbrella)) {
+                continue;
+            }
+
+            distance = getDistanceBetween(curPosition, umbrella);
+            if (distance > (health + durability)) {
+                continue;
+            }
+
+            int newHealth = health;
+            if (distance > durability) {
+                newHealth -= (distance - durability - 1);
+            }
+
+            visited.add(umbrella);
+            getMinMoveCountToSafetyZoneRecursive(count + distance, umbrella, newHealth, sUmbrellaDurability - 1, umbrellas, visited);
+            visited.remove(umbrella);
+        }
+    }
 }
