@@ -1,0 +1,122 @@
+package backtracking;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.StringTokenizer;
+
+public class G17136 {
+    private static final int PASTE_PAPER_SIZE = 5;
+    private static final int PASTE_PAPER_COUNT = 5;
+    private static final int TARGET_PAPER_SIZE = 10;
+    private static boolean[][] sTargetPaper = new boolean[TARGET_PAPER_SIZE][TARGET_PAPER_SIZE];
+    private static int[] sPastePapers = new int[PASTE_PAPER_SIZE + 1];
+    private static int sTotalLeftCount;
+    private static int sMinPasteCount = Integer.MAX_VALUE;
+
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+
+        for (int row = 0; row < TARGET_PAPER_SIZE; ++row) {
+            StringTokenizer st = new StringTokenizer(br.readLine());
+            for (int col = 0; col < TARGET_PAPER_SIZE; ++col) {
+                String state = st.nextToken();
+                if (state.equals("1")) {
+                    sTargetPaper[row][col] = true;
+                    sTotalLeftCount++;
+                }
+            }
+        }
+
+        //1만 모아서 연산하기?
+        for (int pastePaperSize = 1; pastePaperSize < PASTE_PAPER_SIZE + 1; ++pastePaperSize) {
+            sPastePapers[pastePaperSize] = PASTE_PAPER_COUNT;
+        }
+
+        getMinPasteCount(0, 0, 0, 0);
+
+        if (sMinPasteCount == Integer.MAX_VALUE) {
+            sMinPasteCount = -1;
+        }
+
+        System.out.print(sMinPasteCount);
+    }
+
+    private static void getMinPasteCount(int pasteCount, int leftCount, int nextRow, int nextCol) {
+        if (leftCount == sTotalLeftCount) {
+            sMinPasteCount = Math.min(sMinPasteCount, pasteCount);
+
+            return;
+        }
+
+        outer:
+        //while
+
+        for (int row = nextRow; row < TARGET_PAPER_SIZE; ++row) {
+            for (int col = nextCol; col < TARGET_PAPER_SIZE; ++col) {
+                if (!sTargetPaper[row][col]) {
+                    continue;
+                }
+
+                for (int pasteSize = 1; pasteSize <= PASTE_PAPER_SIZE; ++pasteSize) {
+                    if (sPastePapers[pasteSize] <= 0) {
+                        continue;
+                    }
+
+                    int updateCount = updateTargetPaper(row, col, pasteSize);
+                    if (updateCount == 0) {
+                        break outer;
+                    }
+
+                    sPastePapers[pasteSize]--;
+                    getMinPasteCount(pasteCount + 1, leftCount + updateCount, row, col);
+                    sPastePapers[pasteSize]++;
+                }
+            }
+        }
+    }
+
+    private static int updateTargetPaper(final int startRow, final int startCol, final int pasteSize) {
+        int rowSize = startRow + pasteSize;
+        int colSize = startCol + pasteSize;
+
+        if (rowSize > TARGET_PAPER_SIZE || colSize > TARGET_PAPER_SIZE) {
+            return 0;
+        }
+
+        boolean bPastable = true;
+        int updateCount = 0;
+        outer:
+        for (int row = startRow; row < rowSize; ++row) {
+            for (int col = startCol; col < colSize; ++col) {
+                if (!sTargetPaper[row][col]) {
+                    bPastable = false;
+                    break outer;
+                }
+
+                sTargetPaper[row][col] = false;
+                updateCount++;
+            }
+        }
+
+        if (!bPastable) {
+            int count = 0;
+            rollback_outer:
+            for (int row = startRow; row < rowSize; ++row) {
+                for (int col = startCol; col < colSize; ++col) {
+                    sTargetPaper[row][col] = true;
+                    count++;
+
+                    if (count == updateCount) {
+                        break rollback_outer;
+                    }
+                }
+            }
+
+            updateCount = 0;
+        }
+
+        return updateCount;
+    }
+
+}
