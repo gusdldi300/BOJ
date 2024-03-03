@@ -44,7 +44,7 @@ public class G17136 {
             sPastePapers[pastePaperSize] = PASTE_PAPER_COUNT;
         }
 
-        getMinPasteCount(0, 0);
+        getMinPasteCountRecursive(0, 0);
 
         if (sMinPasteCount == Integer.MAX_VALUE) {
             sMinPasteCount = -1;
@@ -53,7 +53,7 @@ public class G17136 {
         System.out.print(sMinPasteCount);
     }
 
-    private static void getMinPasteCount(int pasteCount, int leftCount) {
+    private static void getMinPasteCountRecursive(int pasteCount, int leftCount) {
         if (leftCount == sPastePositions.size()) {
             sMinPasteCount = Math.min(sMinPasteCount, pasteCount);
 
@@ -67,7 +67,7 @@ public class G17136 {
             }
 
             if (!sTargetPaper[pastePosition.row][pastePosition.col]) {
-                getMinPasteCount(pasteCount, leftCount + 1);
+                getMinPasteCountRecursive(pasteCount, leftCount + 1);
 
                 return;
             }
@@ -78,7 +78,7 @@ public class G17136 {
             }
 
             sPastePapers[pasteSize]--;
-            getMinPasteCount(pasteCount + 1, leftCount + 1);
+            getMinPasteCountRecursive(pasteCount + 1, leftCount + 1);
             sPastePapers[pasteSize]++;
 
             updateTo(pastePosition.row, pastePosition.col, pasteSize, true, updateCount);
