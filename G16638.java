@@ -55,12 +55,13 @@ public class G16638 {
         }
 
         sPostFix = new char[sExpression.length()];
-        getLargestSumRecursive(0);
+        getLargestSumRecursive(0, false);
+
 
         System.out.print(sLargestSum);
     }
 
-    private static void getLargestSumRecursive(final int operIndex) {
+    private static void getLargestSumRecursive(final int operIndex, boolean isBracket) {
         if (operIndex == sOperands.length) {
             int sum = getSum();
             sLargestSum = Math.max(sLargestSum, sum);
@@ -68,18 +69,18 @@ public class G16638 {
             return;
         }
 
-        for (int i = operIndex; i < sOperands.length; ++i) {
-            if (i > 0 && sOperatorsPriority[i - 1] == 0) {
-                getLargestSumRecursive(i + 1);
+        if (isBracket == true) {
+            getLargestSumRecursive(operIndex + 1, false);
 
-                continue;
-            }
-
-            int lastPriority = sOperatorsPriority[i];
-            sOperatorsPriority[i] = 0;
-            getLargestSumRecursive(i + 1);
-            sOperatorsPriority[i] = lastPriority;
+            return;
         }
+
+        int lastPriority = sOperatorsPriority[operIndex];
+        sOperatorsPriority[operIndex] = 0;
+        getLargestSumRecursive(operIndex + 1, true);
+        sOperatorsPriority[operIndex] = lastPriority;
+
+        getLargestSumRecursive(operIndex + 1, false);
     }
 
     private static void getPostFixExpression() {
@@ -110,6 +111,7 @@ public class G16638 {
             sPostFix[postFixIndex++] = sOperands[sOperIndexStack.pop()];
         }
     }
+
     private static int getSum() {
         getPostFixExpression();
 
@@ -126,13 +128,13 @@ public class G16638 {
             int secondNum = sNumberStack.pop();
             switch (element) {
                 case '+':
-                    result = firstNum + secondNum;
+                    result = secondNum + firstNum;
                     break;
                 case '-':
                     result = secondNum - firstNum;
                     break;
                 case '*':
-                    result = firstNum * secondNum;
+                    result = secondNum * firstNum;
                     break;
                 default:
                     assert (false);
