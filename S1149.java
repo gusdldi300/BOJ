@@ -1,74 +1,56 @@
+package dp;
+
+/*
+ * 테이블 정의:
+ * dp[i][j]: i는 집의 개수, j는 색깔 개수
+ * i 에서의 j 별 최소 가격
+ *
+ * 점화식:
+ * dp[i][j] = Math.min(dp[i - 1][(j + 1) % 3], dp[i - 1][(j + 2) % 3]) + hp[i][j];
+ *
+ * 초기값 정의:
+ * dp[0][1], dp[0][2], dp[0][3]
+ */
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.StringTokenizer;
 
 public class S1149 {
-    public static void testCode(String[] args) throws IOException {
-        int minimumCost = getMinimumCost();
-        System.out.println(minimumCost);
+    private static final int MAX_COLOR_COUNT = 3;
+    private static int sTotalHouseCount;
+    private static int[][] sHousePrices;
+    private static int[][] sMinPrices;
+
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        sTotalHouseCount = Integer.parseInt(br.readLine());
+
+        sHousePrices = new int[sTotalHouseCount][MAX_COLOR_COUNT];
+        for (int i = 0; i < sTotalHouseCount; ++i) {
+            StringTokenizer st = new StringTokenizer(br.readLine());
+            for (int j = 0; j < MAX_COLOR_COUNT; ++j) {
+                sHousePrices[i][j] = Integer.parseInt(st.nextToken());
+            }
+        }
+
+        sMinPrices = new int[sTotalHouseCount][MAX_COLOR_COUNT];
+        sMinPrices[0][0] = sHousePrices[0][0];
+        sMinPrices[0][1] = sHousePrices[0][1];
+        sMinPrices[0][2] = sHousePrices[0][2];
+
+        for (int i = 1; i < sTotalHouseCount; ++i) {
+            for (int j = 0; j < MAX_COLOR_COUNT; ++j) {
+                sMinPrices[i][j] = Math.min(sMinPrices[i - 1][(j + 1) % 3], sMinPrices[i - 1][(j + 2) % 3]) + sHousePrices[i][j];
+            }
+        }
+
+        int minPrice = sMinPrices[sTotalHouseCount - 1][0];
+        for (int i = 1; i < MAX_COLOR_COUNT; ++i) {
+            minPrice = Math.min(minPrice, sMinPrices[sTotalHouseCount - 1][i]);
+        }
+
+        System.out.print(minPrice);
     }
-
-    private static int getMinimumCost() throws IOException {
-        BufferedReader bf = new BufferedReader(new InputStreamReader(System.in));
-        int count = Integer.parseInt(bf.readLine());
-
-        int[][] costs = new int[count][3];
-        for (int index = 0; index < count; ++index) {
-            String[] inputs = bf.readLine().split(" ");
-
-            for (int colorIndex = 0; colorIndex < 3; ++colorIndex) {
-                costs[index][colorIndex] = Integer.parseInt(inputs[colorIndex]);
-            }
-        }
-
-        int[][] cache = new int[count][3];
-        int depth = 0;
-        for (int colorIndex = 0; colorIndex < 3; ++colorIndex) {
-            cache[count - 1][colorIndex] = costs[count - 1][colorIndex];
-        }
-
-        int lowerCost = Integer.MAX_VALUE;
-        for (int colorIndex = 0; colorIndex < 3; ++colorIndex) {
-            int addCost = getMinimumCostRecursive(costs, colorIndex, depth, cache);
-            int cost = addCost + costs[depth][colorIndex];
-
-            if (cost < lowerCost) {
-                lowerCost = cost;
-            }
-        }
-
-        return lowerCost;
-    }
-
-    private static int getMinimumCostRecursive(int[][] costs, int lastIndex, int depth, int[][] cache) {
-        ++depth;
-
-        if (depth >= costs.length) {
-            return 0;
-        }
-
-        int lowerCost = Integer.MAX_VALUE;
-        for (int colorIndex = 0; colorIndex < 3; ++colorIndex) {
-            if (lastIndex == colorIndex) {
-                continue;
-            }
-
-            int cost;
-            if (cache[depth][colorIndex] == 0) {
-                int addCost = getMinimumCostRecursive(costs, colorIndex, depth, cache);
-
-                cache[depth][colorIndex] = addCost + costs[depth][colorIndex];
-            }
-
-            cost = cache[depth][colorIndex];
-
-            if (cost < lowerCost) {
-                lowerCost = cost;
-            }
-        }
-
-        return lowerCost;
-    }
-
-
 }
