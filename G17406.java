@@ -74,12 +74,13 @@ public class G17406 {
                 continue;
             }
 
-            int[][] copied = copyArray(array);
-            rotateRecursive(rotations[index].offset, rotations[index], copied);
-
+            //int[][] copied = copyArray(array);
+            rotateRecursive(rotations[index].offset, rotations[index], array);
             sVisited[index] = true;
-            getMinArrayRecursive(count + 1, copied, rotations);
+            getMinArrayRecursive(count + 1, array, rotations);
             sVisited[index] = false;
+            rotateBackwardRecursive(rotations[index].offset, rotations[index], array);
+
         }
     }
 
@@ -121,8 +122,8 @@ public class G17406 {
         int endCol = rotation.col + count;
 
         int forwardLast = array[row][endCol];
-        int backwardLast = array[endRow][col];
         int downwardLast = array[endRow][endCol];
+        int backwardLast = array[endRow][col];
         int upwardLast = array[row][col];
         for (int i = 0; i < size - 1; ++i) {
             array[row][endCol - i] = array[row][endCol - i - 1];
@@ -137,5 +138,36 @@ public class G17406 {
         array[row][col + 1] = upwardLast;
 
         rotateRecursive(count - 1, rotation, array);
+    }
+
+    private static void rotateBackwardRecursive(int count, final Rotation rotation, int[][] array) {
+        if (count == 0) {
+            return;
+        }
+
+        int row = rotation.row - count;
+        int col = rotation.col - count;
+        int size = count * 2 + 1;
+
+        int endRow = rotation.row + count;
+        int endCol = rotation.col + count;
+
+        int backwardLast = array[row][col];
+        int downwardLast = array[endRow][col];
+        int forwardLast = array[endRow][endCol];
+        int upwardLast = array[row][endCol];
+        for (int i = 0; i < size - 1; ++i) {
+            array[row][col + i] = array[row][col + i + 1];
+            array[endRow - i][col] = array[endRow - i - 1][col];
+            array[endRow][endCol - i] = array[endRow][endCol - i - 1];
+            array[row + i][endCol] = array[row + i + 1][endCol];
+        }
+
+        array[row + 1][col] = backwardLast;
+        array[endRow][col + 1] = downwardLast;
+        array[endRow - 1][endCol] = forwardLast;
+        array[row][endCol - 1] = upwardLast;
+
+        rotateBackwardRecursive(count - 1, rotation, array);
     }
 }
