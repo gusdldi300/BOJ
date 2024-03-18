@@ -1,11 +1,78 @@
 package backtracking;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.LinkedList;
-import java.util.Stack;
 import java.util.StringTokenizer;
 
 public class G15659 {
+    private static int sMaxNumberCount;
+    private static int[] sNumbers;
+    private static int OPERATOR_SIZE = 4;
+    private static int[] sOperators = new int[OPERATOR_SIZE];
+    private static int sMaxSum = Integer.MIN_VALUE;
+    private static int sMinSum = Integer.MAX_VALUE;
+    private static int sMaxOperCount;
+
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+
+        sMaxNumberCount = Integer.parseInt(br.readLine());
+        sNumbers = new int[sMaxNumberCount];
+
+        StringTokenizer st = new StringTokenizer(br.readLine());
+        for (int i = 0; i < sMaxNumberCount; ++i) {
+            sNumbers[i] = Integer.parseInt(st.nextToken());
+        }
+
+        st = new StringTokenizer(br.readLine());
+        for (int i = 0; i < OPERATOR_SIZE; ++i) {
+            sOperators[i] = Integer.parseInt(st.nextToken());
+            sMaxOperCount += sOperators[i];
+        }
+
+        getMinMaxSumRecursive(1, 0, sNumbers[0]);
+        System.out.format("%d%s%d", sMaxSum, System.lineSeparator(), sMinSum);
+    }
+
+    private static void getMinMaxSumRecursive(final int numCount, final int sum, final int prevNum) {
+        if (numCount == sMaxNumberCount) {
+            int newSum = sum + prevNum;
+            sMaxSum = Math.max(sMaxSum, newSum);
+            sMinSum = Math.min(sMinSum, newSum);
+
+            return;
+        }
+
+        for (int i = 0; i < OPERATOR_SIZE; ++i) {
+            if (sOperators[i] <= 0) {
+                continue;
+            }
+
+            sOperators[i]--;
+            switch (i) {
+                case 0:
+                    getMinMaxSumRecursive(numCount + 1, sum + prevNum, sNumbers[numCount]);
+                    break;
+                case 1:
+                    getMinMaxSumRecursive(numCount + 1, sum + prevNum, -sNumbers[numCount]);
+                    break;
+                case 2:
+                    getMinMaxSumRecursive(numCount + 1, sum, prevNum * sNumbers[numCount]);
+                    break;
+                case 3:
+                    getMinMaxSumRecursive(numCount + 1, sum, prevNum / sNumbers[numCount]);
+                    break;
+                default:
+                    assert (false);
+                    break;
+            }
+            sOperators[i]++;
+        }
+
+    }
+
+    /*
     private static final int OPERATORS_SIZE = 4;
 
     private static int sSeqSize;
@@ -107,4 +174,5 @@ public class G15659 {
 
         return sNumList.remove();
     }
+    */
 }
