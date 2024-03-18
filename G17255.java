@@ -3,10 +3,54 @@ package backtracking;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 public class G17255 {
+    private static int sNumMakeCount;
+    private static String sNumString;
+    private static char[] sNumMakeSeq; // int[] 할 경우, 수의 순서가 달라도 동일한 해쉬값 나옴
+    private static Set<String> sDiscovered = new HashSet<>();
+
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        sNumString = br.readLine();
+
+        int seqLength = (sNumString.length() * (sNumString.length() + 1)) / 2;
+        sNumMakeSeq = new char[seqLength];
+        for (int i = 0; i < sNumString.length(); ++i) {
+            getNumMakeCountRecursive(0, i, i);
+        }
+
+        System.out.print(sNumMakeCount);
+    }
+
+    private static void getNumMakeCountRecursive(int seqIndex, final int leftIndex, final int rightIndex) {
+        if (seqIndex == sNumMakeSeq.length) {
+            String seqString = sNumMakeSeq.toString();
+
+            if (!sDiscovered.contains(seqString)) {
+                ++sNumMakeCount;
+                sDiscovered.add(seqString);
+            }
+
+            return;
+        }
+
+        if (leftIndex < 0 || rightIndex >= sNumString.length()) {
+            return;
+        }
+
+        for (int i = leftIndex; i <= rightIndex; ++i) {
+            sNumMakeSeq[seqIndex] = sNumString.charAt(i);
+            ++seqIndex;
+        }
+
+        getNumMakeCountRecursive(seqIndex, leftIndex - 1, rightIndex);
+        getNumMakeCountRecursive(seqIndex, leftIndex, rightIndex + 1);
+    }
+
+    /*
     private static class Number {
         private int num;
         private HashMap<Integer, Number> children = new HashMap<>();
@@ -120,4 +164,5 @@ public class G17255 {
             sCache[index] = false;
         }
     }
+    */
 }
