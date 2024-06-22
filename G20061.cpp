@@ -38,6 +38,7 @@ unsigned int Position::GetCol() const
 	return mCol;
 }
 
+/*
 void GetResultOfBlueBoard(bool blueBoard[][BLUE_BOARD_COL_SIZE], const std::vector<Position>& positions, unsigned int* outScore);
 void GetResultOfGreenBoard(bool greenBoard[][BOARD_SIZE], const std::vector<Position>& positions, unsigned int* outScore);
 
@@ -219,7 +220,6 @@ blue_found_label:
 	}
 }
 
-
 void GetResultOfGreenBoard(bool greenBoard[][BOARD_SIZE], const std::vector<Position>& positions, unsigned int* outScore)
 {
 	// move
@@ -342,5 +342,201 @@ void pullColBlocks(unsigned int col, bool board[][BLUE_BOARD_COL_SIZE])
 	for (unsigned int i = 0; i < BOARD_SIZE; ++i)
 	{
 		board[i][col] = board[i][col - 1];
+	}
+}
+
+*/
+
+void pullRowBlocks(unsigned int row, bool board[][BOARD_SIZE]);
+void GetResultOf(bool board[][BOARD_SIZE], const std::vector<Position>& positions, unsigned int* outScore);
+
+int main()
+{
+	bool blueBoard[BLUE_BOARD_COL_SIZE][BOARD_SIZE];
+	bool greenBoard[GREEN_BOARD_ROW_SIZE][BOARD_SIZE];
+
+	for (unsigned int i = 0; i < GREEN_BOARD_ROW_SIZE; ++i)
+	{
+		for (unsigned int j = 0; j < BOARD_SIZE; ++j)
+		{
+			greenBoard[i][j] = false;
+			blueBoard[i][j] = false;
+		}
+	}
+
+	unsigned int blockCount;
+	std::cin >> blockCount;
+	assert(blockCount <= 10000U);
+
+	unsigned int score = 0;
+	std::vector<Position> greenPositions;
+	greenPositions.reserve(2);
+
+	std::vector<Position> bluePositions;
+	bluePositions.reserve(2);
+
+	for (unsigned int i = 0; i < blockCount; ++i)
+	{
+		unsigned int blockType;
+		unsigned int row;
+		unsigned int col;
+		std::cin >> blockType >> row >> col;
+
+		// (3, 0), (3, 1) -> (0, 3), (1, 3)
+		// (2, 2), (3, 2) -> (2, 2), (2, 3)
+		switch (blockType)
+		{
+		case 2:
+			greenPositions.push_back(Position(row, col + 1));
+			bluePositions.push_back(Position(col + 1, row));
+			break;
+		case 3:
+			greenPositions.push_back(Position(row + 1, col));
+			bluePositions.push_back(Position(col, row + 1));
+			break;
+		default:
+			break;
+		}
+		greenPositions.push_back(Position(row, col));
+		bluePositions.push_back(Position(col, row));
+
+		GetResultOf(greenBoard, greenPositions, &score);
+		GetResultOf(blueBoard, bluePositions, &score);
+
+		greenPositions.clear();
+		bluePositions.clear();
+	}
+
+	unsigned int leftBlocksCount = 0;
+	for (unsigned int i = 0; i < GREEN_BOARD_ROW_SIZE; ++i)
+	{
+		for (unsigned int j = 0; j < BOARD_SIZE; ++j)
+		{
+			if (greenBoard[i][j])
+			{
+				++leftBlocksCount;
+			}
+
+			if (blueBoard[i][j])
+			{
+				++leftBlocksCount;
+			}
+		}
+	}
+
+	std::cout << score << std::endl;
+	std::cout << leftBlocksCount;
+}
+
+void GetResultOf(bool board[][BOARD_SIZE], const std::vector<Position>& positions, unsigned int* outScore)
+{
+	// move
+	unsigned int placeRow = GREEN_BOARD_ROW_SIZE - 1;
+	for (unsigned int row = 1; row < GREEN_BOARD_ROW_SIZE; ++row)
+	{
+		for (unsigned int positionIndex = 0; positionIndex < positions.size(); ++positionIndex)
+		{
+			if (board[row][positions[positionIndex].GetCol()])
+			{
+				placeRow = row - 1;
+				goto found_label;
+			}
+		}
+	}
+
+	// insert
+found_label:
+	std::stack<int> explodeRows; // 연속으로 나열된 블록들이 없어질 경우, 낮은 행 블록들이 먼저 처리돼야 함
+
+	unsigned int lastRow = positions[0].GetRow();
+	for (unsigned int positionIndex = 0; positionIndex < positions.size(); ++positionIndex)
+	{
+		Position position = positions[positionIndex];
+		unsigned int newPlaceRow = placeRow + (position.GetRow() - lastRow);
+		board[newPlaceRow][position.GetCol()] = true;
+
+		bool bExplode = true;
+		for (unsigned int greenCol = 0; greenCol < BOARD_SIZE; ++greenCol)
+		{
+			if (board[newPlaceRow][greenCol] == false)
+			{
+				bExplode = false;
+
+				break;
+			}
+		}
+
+		if (bExplode)
+		{
+			explodeRows.push(newPlaceRow);
+			for (unsigned int greenCol = 0; greenCol < BOARD_SIZE; ++greenCol)
+			{
+				board[newPlaceRow][greenCol] = false;
+			}
+
+			(*outScore)++;
+		}
+
+		lastRow = position.GetRow();
+	}
+
+	// pull blocks
+	while (explodeRows.empty() == false)
+	{
+		unsigned int explodeRow = explodeRows.top();
+		explodeRows.pop();
+
+		for (unsigned int i = explodeRow; i > 0; --i)
+		{
+			pullRowBlocks(i, board);
+		}
+
+		for (unsigned int j = 0; j < BOARD_SIZE; ++j)
+		{
+			board[0][j] = false;
+		}
+	}
+
+	unsigned int boundaryBlockCount = 0;
+	// clear boundary
+	for (unsigned int i = 0; i < BOUDARY_BOARD_SIZE; ++i)
+	{
+		for (unsigned int j = 0; j < BOARD_SIZE; ++j)
+		{
+			if (board[i][j])
+			{
+				++boundaryBlockCount;
+				break;
+			}
+		}
+	}
+
+	if (boundaryBlockCount > 0)
+	{
+		for (unsigned i = GREEN_BOARD_ROW_SIZE - 1; i >= BOUDARY_BOARD_SIZE; --i)
+		{
+			for (unsigned int j = 0; j < BOARD_SIZE; ++j)
+			{
+				board[i][j] = board[i - boundaryBlockCount][j];
+			}
+		}
+
+		for (unsigned i = 0; i < BOUDARY_BOARD_SIZE; ++i)
+		{
+			for (unsigned int j = 0; j < BOARD_SIZE; ++j)
+			{
+				board[i][j] = false;
+			}
+		}
+	}
+}
+
+void pullRowBlocks(unsigned int row, bool board[][BOARD_SIZE])
+{
+	assert(row > 0);
+
+	for (unsigned int j = 0; j < BOARD_SIZE; ++j)
+	{
+		board[row][j] = board[row - 1][j];
 	}
 }
